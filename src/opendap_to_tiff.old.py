@@ -19,7 +19,6 @@ import rasterio as rio
 if os.getlogin() == 'jason':
     base_path = '/Users/jason/0_dat/S3/opendap/'
 
-os.chdir(base_path)
 
 WGSProj = CRS.from_string("+init=EPSG:4326")
 PolarProj = CRS.from_string("+init=EPSG:3413")
@@ -120,6 +119,7 @@ for d in dates:
             else:
                 ds = ds.rename({'x':'xcoor'})
                 ds = ds.rename({'y':'ycoor'})
+                
                 
                 
             data = ds[v].sel(ycoor=y_slice,xcoor=x_slice)
