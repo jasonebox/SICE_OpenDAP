@@ -69,10 +69,10 @@ plotting_dict['factor'] = {'minval' : 0, 'maxval' : 1}
 
 
 # area of interest in espg:4326
-lat_N = 62
-lat_S = 61
-lon_W = -48.5
-lon_E = -46.5
+lat_n = 62
+lat_s = 61
+lon_w = -48.5
+lon_e = -46.5
 
 
 ############### This is the Code ##################
@@ -91,8 +91,8 @@ Gr_S = 62
 Gr_N = 62.8
 
 
-west_x,north_y = wgs_data.transform(lon_W, lat_N)
-east_x,south_y = wgs_data.transform(lon_E, lat_S)
+west_x,north_y = wgs_data.transform(lon_w, lat_n)
+east_x,south_y = wgs_data.transform(lon_e, lat_s)
 
 
 Gr_W_x,Gr_N_y = wgs_data.transform(Gr_W, Gr_N)
