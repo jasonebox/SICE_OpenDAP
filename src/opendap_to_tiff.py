@@ -49,7 +49,7 @@ def ExportGeoTiff(x,y,z,crs,path):
     return None 
 
 
-# This is a list of dates (right now it is set to 2022-09-21):
+# a list of dates, here it is set to 2022-09-21
 dates = ['2022-09-' + str(dd+1).zfill(2) for dd in np.arange(20,21)]
 out_f = os.getcwd() # output folder for tif files
 
@@ -60,90 +60,73 @@ out_f = os.getcwd() # output folder for tif files
 #  minval is the min value of the colorscale, maxval is the max value of the colorscale. 
 # values outside the scale will not be plotted, cm is the colormap.
 
-plotting_dict = {}
+# plotting_dict = {}
 
-plotting_dict['albedo_bb_planar_sw'] = {'minval' : 0, 'maxval' : 1}
+# plotting_dict['albedo_bb_planar_sw'] = {'minval' : 0, 'maxval' : 1}
 
-plotting_dict['isnow'] = {'minval' : 1, 'maxval' : 3}
-plotting_dict['factor'] = {'minval' : 0, 'maxval' : 1}
+# plotting_dict['isnow'] = {'minval' : 1, 'maxval' : 3}
+# plotting_dict['factor'] = {'minval' : 0, 'maxval' : 1}
 
+vars_i_want=['albedo_bb_planar_sw','factor']
 
 # area of interest in espg:4326
 lat_n = 62
 lat_s = 61
 lon_w = -48.5
 lon_e = -46.5
-lon_w= -46.515023
-lon_e= -48.354069
+lon_e= -46.515023
+lon_w= -48.354069
 lat_n= 62.047626
 lat_s= 60.863512
 
 
 ############### This is the Code ##################
 
-# This is the extent of map plotting in PlateCarree Coordinates
-
-#Gr_W = -60
-#Gr_E = -30.5
-#Gr_S = 58
-#Gr_N = 85
-
-
-Gr_W = -48.5
-Gr_E = -46.5
-Gr_S = 62
-Gr_N = 62.8
-
-
 west_x,north_y = wgs_data.transform(lon_w, lat_n)
 east_x,south_y = wgs_data.transform(lon_e, lat_s)
-
-
-Gr_W_x,Gr_N_y = wgs_data.transform(Gr_W, Gr_N)
-Gr_E_x,Gr_S_y = wgs_data.transform(Gr_E, Gr_S)
-
 
 y_slice = slice(int(north_y),int(south_y))
 x_slice = slice(int(west_x),int(east_x))
 
 
+## how to list all variables
 for d in dates:
     DATASET_ID = 'sice_500_' + d.replace('-', '_') + '.nc'
     
-    for v in plotting_dict:
-        try:
+    for v in vars_i_want:
+        # try:
             
-            print(DATASET_ID)
-            ds = xr.open_dataset(f'https://thredds.geus.dk/thredds/dodsC/SICE_Greenland_500m/{DATASET_ID}')
-                
-            yshape,xshape = np.shape(ds[v])
+        print(DATASET_ID,v)
+        ds = xr.open_dataset(f'https://thredds.geus.dk/thredds/dodsC/SICE_Greenland_500m/{DATASET_ID}')
+        # a=np.array(list(ds.keys()))
+        # a.sorted()
+        yshape,xshape = np.shape(ds[v])
+        
+        if yshape != 5424: 
+            ds = ds.rename({'x2':'xcoor'})
+            ds = ds.rename({'y2':'ycoor'})        
+        else:
+            ds = ds.rename({'x':'xcoor'})
+            ds = ds.rename({'y':'ycoor'})
             
-            if yshape != 5424: 
-                ds = ds.rename({'x2':'xcoor'})
-                ds = ds.rename({'y2':'ycoor'})        
-            else:
-                ds = ds.rename({'x':'xcoor'})
-                ds = ds.rename({'y':'ycoor'})
-                
-                
-            data = ds[v].sel(ycoor=y_slice,xcoor=x_slice)
-            x = ds['xcoor'].sel(xcoor=x_slice)
-            y = ds['ycoor'].sel(ycoor=y_slice)
-            
-       
-            data = data.where(data <= plotting_dict[v]['maxval'])
-            data = data.where(data >= plotting_dict[v]['minval'])
-            
-            z = data.to_numpy()
-            x = x.to_numpy()
-            y = y.to_numpy()
-            
-            path = out_f + os.sep + DATASET_ID[:-3] + '_' + v + '.tif'
-            
-            ExportGeoTiff(x, y, z, PolarProj, path)
-            
-            ds.close()
+        data = ds[v].sel(ycoor=y_slice,xcoor=x_slice)
+        x = ds['xcoor'].sel(xcoor=x_slice)
+        y = ds['ycoor'].sel(ycoor=y_slice)
+        
+   
+        data = data.where(data <= plotting_dict[v]['maxval'])
+        data = data.where(data >= plotting_dict[v]['minval'])
+        
+        z = data.to_numpy()
+        x = x.to_numpy()
+        y = y.to_numpy()
+        
+        path = out_f + os.sep + DATASET_ID[:-3] + '_' + v + '.tif'
+        
+        ExportGeoTiff(x, y, z, PolarProj, path)
+        
+        ds.close()
     
-        except:
+        # except:
             
-            print('data does not exist')
+        #     print('data does not exist')
